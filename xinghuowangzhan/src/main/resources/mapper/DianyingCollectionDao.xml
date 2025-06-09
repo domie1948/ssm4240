@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.DianyingCollectionDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.dianying_id as dianyingId
+        ,a.yonghu_id as yonghuId
+        ,a.insert_time as insertTime
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.DianyingCollectionView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,dianying.dianying_name as dianyingName
+        ,dianying.dianying_types as dianyingTypes
+        ,dianying.dianying_photo as dianyingPhoto
+        ,dianying.dianying_video as dianyingVideo
+        ,dianying.dianying_content as dianyingContent
+        ,yonghu.yonghu_name as yonghuName
+        ,yonghu.yonghu_phone as yonghuPhone
+        ,yonghu.yonghu_id_number as yonghuIdNumber
+        ,yonghu.yuangong_photo as yuangongPhoto
+        ,yonghu.new_money as newMoney
+        ,yonghu.huiyuan_types as huiyuanTypes
+
+        FROM dianying_collection  a
+        left JOIN dianying dianying ON a.dianying_id = dianying.id
+        left JOIN yonghu yonghu ON a.yonghu_id = yonghu.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test="params.dianyingId != null">
+                and a.dianying_id = #{params.dianyingId}
+            </if>
+            <if test="params.yonghuId != null">
+                and a.yonghu_id = #{params.yonghuId}
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+
+            <if test=" params.dianyingName != '' and params.dianyingName != null and params.dianyingName != 'null' ">
+                and dianying.dianying_name like CONCAT('%',#{params.dianyingName},'%')
+            </if>
+            <if test="params.dianyingTypes != null">
+                and dianying.dianying_types = #{params.dianyingTypes}
+            </if>
+
+            <if test=" params.dianyingVideo != '' and params.dianyingVideo != null and params.dianyingVideo != 'null' ">
+                and dianying.dianying_video like CONCAT('%',#{params.dianyingVideo},'%')
+            </if>
+            <if test=" params.dianyingContent != '' and params.dianyingContent != null and params.dianyingContent != 'null' ">
+                and dianying.dianying_content like CONCAT('%',#{params.dianyingContent},'%')
+            </if>
+            <if test=" params.yonghuName != '' and params.yonghuName != null and params.yonghuName != 'null' ">
+                and yonghu.yonghu_name like CONCAT('%',#{params.yonghuName},'%')
+            </if>
+            <if test=" params.yonghuPhone != '' and params.yonghuPhone != null and params.yonghuPhone != 'null' ">
+                and yonghu.yonghu_phone like CONCAT('%',#{params.yonghuPhone},'%')
+            </if>
+            <if test=" params.yonghuIdNumber != '' and params.yonghuIdNumber != null and params.yonghuIdNumber != 'null' ">
+                and yonghu.yonghu_id_number like CONCAT('%',#{params.yonghuIdNumber},'%')
+            </if>
+            <if test="params.newMoneyStart != null ">
+                <![CDATA[  and yonghu.new_money >= #{params.newMoneyStart}   ]]>
+            </if>
+            <if test="params.newMoneyEnd != null ">
+                <![CDATA[  and yonghu.new_money <= #{params.newMoneyEnd}   ]]>
+            </if>
+            <if test="params.huiyuanTypes != null">
+                and yonghu.huiyuan_types = #{params.huiyuanTypes}
+            </if>
+
+        </where>
+        order by a.${params.orderBy} desc
+    </select>
+
+</mapper>

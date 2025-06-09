@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.XiaoshuoLiuyanDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.xiaoshuo_id as xiaoshuoId
+        ,a.yonghu_id as yonghuId
+        ,a.xiaoshuo_liuyan_content as xiaoshuoLiuyanContent
+        ,a.reply_content as replyContent
+        ,a.insert_time as insertTime
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.XiaoshuoLiuyanView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,xiaoshuo.xiaoshuo_name as xiaoshuoName
+        ,xiaoshuo.xiaoshuo_types as xiaoshuoTypes
+        ,xiaoshuo.xiaoshuo_photo as xiaoshuoPhoto
+        ,xiaoshuo.xiaoshuo_file as xiaoshuoFile
+        ,xiaoshuo.xiaoshuo_content as xiaoshuoContent
+        ,yonghu.yonghu_name as yonghuName
+        ,yonghu.yonghu_phone as yonghuPhone
+        ,yonghu.yonghu_id_number as yonghuIdNumber
+        ,yonghu.yuangong_photo as yuangongPhoto
+        ,yonghu.new_money as newMoney
+        ,yonghu.huiyuan_types as huiyuanTypes
+
+        FROM xiaoshuo_liuyan  a
+        left JOIN xiaoshuo xiaoshuo ON a.xiaoshuo_id = xiaoshuo.id
+        left JOIN yonghu yonghu ON a.yonghu_id = yonghu.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test="params.xiaoshuoId != null">
+                and a.xiaoshuo_id = #{params.xiaoshuoId}
+            </if>
+            <if test="params.yonghuId != null">
+                and a.yonghu_id = #{params.yonghuId}
+            </if>
+            <if test=" params.xiaoshuoLiuyanContent != '' and params.xiaoshuoLiuyanContent != null and params.xiaoshuoLiuyanContent != 'null' ">
+                and a.xiaoshuo_liuyan_content like CONCAT('%',#{params.xiaoshuoLiuyanContent},'%')
+            </if>
+            <if test=" params.replyContent != '' and params.replyContent != null and params.replyContent != 'null' ">
+                and a.reply_content like CONCAT('%',#{params.replyContent},'%')
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+
+            <if test=" params.xiaoshuoName != '' and params.xiaoshuoName != null and params.xiaoshuoName != 'null' ">
+                and xiaoshuo.xiaoshuo_name like CONCAT('%',#{params.xiaoshuoName},'%')
+            </if>
+            <if test="params.xiaoshuoTypes != null">
+                and xiaoshuo.xiaoshuo_types = #{params.xiaoshuoTypes}
+            </if>
+
+            <if test=" params.xiaoshuoContent != '' and params.xiaoshuoContent != null and params.xiaoshuoContent != 'null' ">
+                and xiaoshuo.xiaoshuo_content like CONCAT('%',#{params.xiaoshuoContent},'%')
+            </if>
+            <if test=" params.yonghuName != '' and params.yonghuName != null and params.yonghuName != 'null' ">
+                and yonghu.yonghu_name like CONCAT('%',#{params.yonghuName},'%')
+            </if>
+            <if test=" params.yonghuPhone != '' and params.yonghuPhone != null and params.yonghuPhone != 'null' ">
+                and yonghu.yonghu_phone like CONCAT('%',#{params.yonghuPhone},'%')
+            </if>
+            <if test=" params.yonghuIdNumber != '' and params.yonghuIdNumber != null and params.yonghuIdNumber != 'null' ">
+                and yonghu.yonghu_id_number like CONCAT('%',#{params.yonghuIdNumber},'%')
+            </if>
+            <if test="params.newMoneyStart != null ">
+                <![CDATA[  and yonghu.new_money >= #{params.newMoneyStart}   ]]>
+            </if>
+            <if test="params.newMoneyEnd != null ">
+                <![CDATA[  and yonghu.new_money <= #{params.newMoneyEnd}   ]]>
+            </if>
+            <if test="params.huiyuanTypes != null">
+                and yonghu.huiyuan_types = #{params.huiyuanTypes}
+            </if>
+
+        </where>
+        order by a.${params.orderBy} desc
+    </select>
+
+</mapper>
